@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nilwala Nature Diary - Student Entry</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f9f4; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #2d5a27; font-size: 24px; margin-bottom: 5px; }
+        p.subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        label { display: block; text-align: left; font-size: 12px; color: #555; margin-top: 10px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px; }
+        .btn-submit { background: #2d5a27; color: white; }
+        .btn-submit:disabled { background: #ccc; }
+        .btn-admin { background: #f0f0f0; color: #555; margin-top: 40px; font-size: 12px; }
+        #msg { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Nilwala Nature Diary</h1>
+    <p class="subtitle">Please enter your details below</p>
+
+    <input type="text" id="stuName" placeholder="Full Name">
+    <input type="text" id="stuClass" placeholder="Class">
+    
+    <label>Upload your clear photo:</label>
+    <input type="file" id="stuPhoto" accept="image/*">
+
+    <button id="submitBtn" class="btn btn-submit" onclick="submitData()">Submit Details</button>
+    <div id="msg"></div>
+
+    <button class="btn btn-admin" onclick="adminDownload()">Admin: Download All PDF</button>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4XWWTWur8lP35tb_Ig8JFOy9J0gt4hXfaY3hkacqM53eVyPZNRSl5kl6jRF4cUmDRSw/exec";
+    let base64Image = "";
+
+    document.getElementById('stuPhoto').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = () => { base64Image = reader.result; };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    async function submitData() {
+        const name = document.getElementById('stuName').value;
+        const className = document.getElementById('stuClass').value;
+        const btn = document.getElementById('submitBtn');
+        const msg = document.getElementById('msg');
+
+        if (!name || !className || !base64Image) return alert("Please fill all fields and upload a photo!");
+
+        btn.disabled = true;
+        msg.innerText = "Saving to database...";
+        msg.style.color = "blue";
+
+        try {
+            await fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ name: name, class: className, photo: base64Image })
+            });
+            msg.innerText = "Successfully Submitted!";
+            msg.style.color = "green";
+            document.getElementById('stuName').value = "";
+            document.getElementById('stuClass').value = "";
+            document.getElementById('stuPhoto').value = "";
+            base64Image = "";
+        } catch (e) {
+            msg.innerText = "Error. Try again.";
+            msg.style.color = "red";
+            btn.disabled = false;
+        }
+    }
+
+    async function adminDownload() {
+        const pass = prompt("Enter Admin Password:");
+        if (pass !== "1234") return alert("Wrong password");
+
+        const msg = document.getElementById('msg');
+        msg.innerText = "Fetching data & preparing pages...";
+        
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const data = await response.json();
+            
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4'); // A4 size page
+            
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            data.forEach((row, i) => {
+                // If it's not the first student, add a new page
+                if (i > 0) {
+                    pdf.addPage();
+                }
+
+                // 1. ADD HEADER
+                pdf.setFontSize(22);
+                pdf.setTextColor(45, 90, 39);
+                pdf.setFont("helvetica", "bold");
+                pdf.text("Nilwala Nature Diary", pageWidth / 2, 20, {align: "center"});
+                
+                pdf.setDrawColor(45, 90, 39);
+                pdf.setLineWidth(1);
+                pdf.line(20, 25, pageWidth - 20, 25);
+
+                // 2. ADD LARGE PHOTO
+                // row[0] = Name, row[1] = Class, row[2] = Photo
+                const imgData = row[2];
+                if (imgData && imgData.startsWith("data:image")) {
+                    try {
+                        // Calculate sizes for a large centered photo
+                        const imgWidth = 140; // Large width
+                        const imgHeight = 140; // Keep it square or adjust ratio
+                        const xPos = (pageWidth - imgWidth) / 2;
+                        const yPos = 40;
+
+                        pdf.addImage(imgData, 'JPEG', xPos, yPos, imgWidth, imgHeight);
+                        
+                        // Border around photo
+                        pdf.setDrawColor(200);
+                        pdf.setLineWidth(0.5);
+                        pdf.rect(xPos, yPos, imgWidth, imgHeight);
+                    } catch (e) {
+                        pdf.text("[Image Format Error]", pageWidth / 2, 100, {align: "center"});
+                    }
+                }
+
+                // 3. ADD DETAILS UNDER THE PHOTO
+                const textYStart = 195; // Position below the large photo
+
+                // Name
+                pdf.setFontSize(24);
+                pdf.setTextColor(0);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(row[0].toUpperCase(), pageWidth / 2, textYStart, {align: "center"});
+
+                // Class
+                pdf.setFontSize(18);
+                pdf.setFont("helvetica", "normal");
+                pdf.setTextColor(100);
+                pdf.text("Class: " + row[1], pageWidth / 2, textYStart + 12, {align: "center"});
+                
+                // Footer Page Number
+                pdf.setFontSize(10);
+                pdf.text("Page " + (i + 1), pageWidth / 2, pageHeight - 10, {align: "center"});
+            });
+
+            pdf.save("Nilwala_Nature_Diary_Full_Size.pdf");
+            msg.innerText = "PDF Downloaded successfully!";
+            msg.style.color = "green";
+        } catch (err) {
+            msg.innerText = "Error fetching data.";
+            msg.style.color = "red";
+        }
+    }
+</script>
+
+</body>
+</html>
