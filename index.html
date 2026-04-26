@@ -16,6 +16,22 @@
         .btn-submit:disabled { background: #ccc; }
         .btn-admin { background: #f0f0f0; color: #555; margin-top: 40px; font-size: 12px; }
         #msg { margin-top: 15px; font-weight: bold; }
+		
+		.btn-gallery { 
+        background: #fdfdfd; 
+        color: #2d5a27; 
+        border: 2px solid #2d5a27; 
+        margin-top: 10px;
+    }
+    .btn-gallery:hover { 
+        background: #2d5a27; 
+        color: white; 
+    }
+    .nav-container {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
     </style>
 </head>
 <body>
@@ -32,6 +48,11 @@
 
     <button id="submitBtn" class="btn btn-submit" onclick="submitData()">Submit Details</button>
     <div id="msg"></div>
+	
+	<div class="nav-container">
+        <p style="font-size: 13px; color: #666;">Want to see other entries?</p>
+        <button class="btn btn-gallery" onclick="window.location.href='view.html'">View Student Gallery</button>
+    </div>
 
     <button class="btn btn-admin" onclick="adminDownload()">Admin: Download All PDF</button>
 </div>
