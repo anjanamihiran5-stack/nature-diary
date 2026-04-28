@@ -2,186 +2,325 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nilwala Nature Diary - Student Entry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nilwala Nature Diary - Entry</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f9f4; padding: 20px; display: flex; justify-content: center; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        h1 { color: #2d5a27; font-size: 24px; margin-bottom: 5px; }
-        p.subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        label { display: block; text-align: left; font-size: 12px; color: #555; margin-top: 10px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px; }
-        .btn-submit { background: #2d5a27; color: white; }
-        .btn-submit:disabled { background: #ccc; }
-        .btn-admin { background: #f0f0f0; color: #555; margin-top: 40px; font-size: 12px; }
-        #msg { margin-top: 15px; font-weight: bold; }
+	
 		
-		.btn-gallery { 
-        background: #fdfdfd; 
-        color: #2d5a27; 
-        border: 2px solid #2d5a27; 
-        margin-top: 10px;
-    }
-    .btn-gallery:hover { 
-        background: #2d5a27; 
-        color: white; 
-    }
-    .nav-container {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #eee;
-    }
+        /* Modern Nature Theme Variables */
+        :root {
+            --primary: #2d5a27;
+            --primary-hover: #1e3d1a;
+            --bg-color: #f0f7f0;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --accent: #8eb486;
+            --error: #e74c3c;
+            --success: #27ae60;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: linear-gradient(135deg, #eaf4ea 0%, #f0f7f0 100%);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 15px 35px rgba(45, 90, 39, 0.1); 
+            width: 100%; 
+            max-width: 420px; 
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        h1 { 
+            color: var(--primary); 
+            margin-bottom: 8px; 
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle { 
+            color: #666; 
+            margin-bottom: 30px; 
+            font-size: 15px; 
+        }
+
+        /* Input Styling */
+        input[type="text"], select { 
+            width: 100%; 
+            padding: 14px 16px; 
+            margin: 10px 0; 
+            border: 2px solid #eee; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, 0.1);
+        }
+
+        /* Custom File Upload */
+        input[type="file"] {
+            margin: 15px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Button General Styling */
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 14px; 
+            font-weight: 700; 
+            font-size: 16px;
+            cursor: pointer; 
+            margin-top: 12px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        .btn-submit { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2);
+        }
+
+        .btn-submit:hover { 
+            background: var(--primary-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(45, 90, 39, 0.3);
+        }
+
+        .btn-submit:active { transform: translateY(0); }
+
+        .btn-submit:disabled { 
+            background: #cbd5e0; 
+            cursor: not-allowed; 
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-gallery { 
+            background: transparent; 
+            color: var(--primary); 
+            border: 2px solid var(--primary); 
+            margin-top: 20px;
+        }
+
+        .btn-gallery:hover { 
+            background: #f0fdf4;
+            transform: translateY(-2px);
+        }
+
+        /* Admin Section */
+        .admin-section { 
+            margin-top: 35px; 
+            padding-top: 25px; 
+            border-top: 1px solid #eee; 
+        }
+
+        .btn-admin { 
+            background: #f8fafc; 
+            color: #64748b; 
+            font-size: 13px; 
+            border: 1px solid #e2e8f0;
+            margin-top: 8px;
+        }
+
+        .btn-admin:hover { 
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        #msg { 
+            margin-top: 20px; 
+            font-size: 14px;
+            font-weight: 600; 
+            min-height: 20px; 
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .nav-container p {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Decorative Leaf Icon (Optional) */
+        .leaf-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
+    <div class="leaf-icon">🌿</div>
     <h1>Nilwala Nature Diary</h1>
-    <p class="subtitle">Please enter your details below</p>
-
-    <input type="text" id="stuName" placeholder="Full Name">
-    <input type="text" id="stuClass" placeholder="Class">
+    <p class="subtitle">Capture your nature discoveries</p>
     
-    <label>Upload your clear photo:</label>
+    <input type="text" id="stuName" placeholder="Enter Full Name">
+    
+    <select id="stuClass">
+        <option value="">-- Select Your Class --</option>
+        <option value="2MT1">2MT1</option><option value="2MT2">2MT2</option><option value="2MT3">2MT3</option>
+        <option value="2MTE">2MTE</option><option value="2SC1">2SC1</option><option value="2SC2">2SC2</option>
+        <option value="2SCE">2SCE</option><option value="2PR1">2PR1</option><option value="2PE1">2PE1</option>
+        <option value="2PE2">2PE2</option><option value="2PEE">2PEE</option>
+    </select>
+    
     <input type="file" id="stuPhoto" accept="image/*">
-
-    <button id="submitBtn" class="btn btn-submit" onclick="submitData()">Submit Details</button>
+    <button id="submitBtn" class="btn btn-submit" onclick="submitData()">Submit My Entry</button>
+    
     <div id="msg"></div>
-	
-	<div class="nav-container">
-        <p style="font-size: 13px; color: #666;">Want to see other entries?</p>
-        <button class="btn btn-gallery" onclick="window.location.href='view.html'">View Student Gallery</button>
+    
+    <div class="nav-container">
+        <p style="font-size: 13px; color: #666;">Student Hub</p>
+        <button class="btn btn-gallery" onclick="goToClassGallery()">View Class Gallery</button>
     </div>
 
-    <button class="btn btn-admin" onclick="adminDownload()">Admin: Download All PDF</button>
+    <div class="admin-section">
+        <p style="font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Admin Dashboard</p>
+        <button class="btn btn-admin" onclick="adminDownloadByClass()">Download Class PDF</button>
+    </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4XWWTWur8lP35tb_Ig8JFOy9J0gt4hXfaY3hkacqM53eVyPZNRSl5kl6jRF4cUmDRSw/exec";
-    let base64Image = "";
+    // [The Script logic remains exactly the same as your provided code]
+    const dbURLs = {
+        "2MT1": "https://script.google.com/macros/s/AKfycbyjasjbxmnwWdPcApWRkRX6i61ZTJI_yr6JcvLKybGmmzmsCxLqGZli6eZYU-Ua4cI/exec",
+        "2MT2": "https://script.google.com/macros/s/AKfycbxtBaIv1yeKp1JH9u9xHp7OMzQ-XKKekyUlinLgAJLqTOshH5woC7Ge2ZO-ojD5dN6U/exec", 
+        "2MT3": "https://script.google.com/macros/s/AKfycbxNboQq8joQSUhSQcpv_VbScC0y--nVWA1aicn9y8fFVB9RuZpaOOSCHGTY2auzbYGF/exec",
+        "2MTE": "https://script.google.com/macros/s/AKfycbzv2H5cYKUiiTyVD23XRXGAV7-9_Vrz9nWVJf5Zz-8oV3C998kM5tWFYopvzUdDZS8A/exec", 
+        "2SC1": "https://script.google.com/macros/s/AKfycbxnHntGJUWlfhCL7LZ9DFxIYpJOiy6Rnu2U6nSKr9s4xKyYUBn511UCpA6uFMTtJEU3/exec", 
+        "2SC2": "https://script.google.com/macros/s/AKfycbz0vTDou24xKd5VYUtGP6iNFMY0vBiywrdiQp3SlDeexMIDzafDLyNbmnceP-O5UgbT/exec",
+        "2SCE": "https://script.google.com/macros/s/AKfycbySxm-5wfcOwlO8MmTHsWgmNel79M8KeLCyomTi7uVTbn_-7n2_s0aOPUgxW4LmIw3E/exec", 
+        "2PR1": "https://script.google.com/macros/s/AKfycbzJB8Yosp6UDcwFCOKyTPRO1-CLZFqun3Q1GWUUMLJumU4zGyzWGVYOqXL5vELkAw/exec", 
+        "2PE1": "https://script.google.com/macros/s/AKfycbwZZy0LXrNvQWEnYZYeBDynap_lwctDJHNq9hbYQ16ivlRCBqL3mt3rRKQiiCSlZOxQCA/exec",
+        "2PE2": "https://script.google.com/macros/s/AKfycbypDGKaioFw5mpzP6CxMqwVg9k6VWMQqVssJOW64bxyysrt3TXzKPdbPmkMMbrq6icR/exec", 
+        "2PEE": "https://script.google.com/macros/s/AKfycbz_JkO2xlg9QFqQLoNVhvxe4IET2EYo2O3ZDLUktqS8tBN1-86Lgwmi77mHZ7bwJ8NX/exec"
+    };
+
+    let compressedImage = "";
 
     document.getElementById('stuPhoto').addEventListener('change', function(e) {
         const reader = new FileReader();
-        reader.onload = () => { base64Image = reader.result; };
-        reader.readAsDataURL(e.target.files[0]);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 500;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * (MAX_WIDTH / img.width);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+            };
+            img.src = event.target.result;
+        };
+        if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
     });
 
     async function submitData() {
-        const name = document.getElementById('stuName').value;
-        const className = document.getElementById('stuClass').value;
+        const name = document.getElementById('stuName').value.trim();
+        const cls = document.getElementById('stuClass').value;
+        const targetURL = dbURLs[cls];
+
+        if (!name || !cls || !compressedImage) return alert("Please fill all fields and select a photo!");
+
         const btn = document.getElementById('submitBtn');
         const msg = document.getElementById('msg');
-
-        if (!name || !className || !base64Image) return alert("Please fill all fields and upload a photo!");
-
+        
         btn.disabled = true;
-        msg.innerText = "Saving to database...";
-        msg.style.color = "blue";
+        msg.innerText = "Processing your nature discovery...";
+        msg.style.color = "var(--primary)";
 
         try {
-            await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({ name: name, class: className, photo: base64Image })
+            await fetch(targetURL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                body: JSON.stringify({name: name, class: cls, photo: compressedImage}) 
             });
-            msg.innerText = "Successfully Submitted!";
-            msg.style.color = "green";
-            document.getElementById('stuName').value = "";
-            document.getElementById('stuClass').value = "";
-            document.getElementById('stuPhoto').value = "";
-            base64Image = "";
+            msg.innerText = "Success! Saved in the " + cls + " diary.";
+            msg.style.color = "var(--success)";
+            setTimeout(() => location.reload(), 2000);
         } catch (e) {
-            msg.innerText = "Error. Try again.";
-            msg.style.color = "red";
+            alert("Upload failed. Check connection.");
             btn.disabled = false;
         }
     }
+    
+    function goToClassGallery() {
+        const cls = document.getElementById('stuClass').value;
+        if (!cls) return alert("Please select your class first!");
+        window.location.href = "view.html?class=" + cls;
+    }
 
-    async function adminDownload() {
+    async function adminDownloadByClass() {
+        const cls = document.getElementById('stuClass').value;
+        if (!cls) return alert("Select a class first!");
         const pass = prompt("Enter Admin Password:");
         if (pass !== "1234") return alert("Wrong password");
 
+        const targetURL = dbURLs[cls];
         const msg = document.getElementById('msg');
-        msg.innerText = "Fetching data & preparing pages...";
+        msg.innerText = "Generating PDF for " + cls + "...";
         
         try {
-            const response = await fetch(SCRIPT_URL);
+            const response = await fetch(targetURL);
             const data = await response.json();
             
+            if (!data || data.length === 0) {
+                msg.innerText = "No entries found for this class.";
+                return;
+            }
+
             const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4'); // A4 size page
-            
+            const pdf = new jsPDF('p', 'mm', 'a4');
             const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
 
             data.forEach((row, i) => {
-                // If it's not the first student, add a new page
-                if (i > 0) {
-                    pdf.addPage();
-                }
-
-                // 1. ADD HEADER
-                pdf.setFontSize(22);
+                if (i > 0) pdf.addPage();
+                pdf.setFontSize(20);
                 pdf.setTextColor(45, 90, 39);
-                pdf.setFont("helvetica", "bold");
-                pdf.text("Nilwala Nature Diary", pageWidth / 2, 20, {align: "center"});
-                
-                pdf.setDrawColor(45, 90, 39);
-                pdf.setLineWidth(1);
+                pdf.text("Nilwala Nature Diary - " + cls, pageWidth / 2, 20, {align: "center"});
                 pdf.line(20, 25, pageWidth - 20, 25);
-
-                // 2. ADD LARGE PHOTO
-                // row[0] = Name, row[1] = Class, row[2] = Photo
-                const imgData = row[2];
-                if (imgData && imgData.startsWith("data:image")) {
-                    try {
-                        // Calculate sizes for a large centered photo
-                        const imgWidth = 140; // Large width
-                        const imgHeight = 140; // Keep it square or adjust ratio
-                        const xPos = (pageWidth - imgWidth) / 2;
-                        const yPos = 40;
-
-                        pdf.addImage(imgData, 'JPEG', xPos, yPos, imgWidth, imgHeight);
-                        
-                        // Border around photo
-                        pdf.setDrawColor(200);
-                        pdf.setLineWidth(0.5);
-                        pdf.rect(xPos, yPos, imgWidth, imgHeight);
-                    } catch (e) {
-                        pdf.text("[Image Format Error]", pageWidth / 2, 100, {align: "center"});
-                    }
+                if (row[2] && row[2].startsWith("data:image")) {
+                    pdf.addImage(row[2], 'JPEG', 35, 40, 140, 140);
                 }
-
-                // 3. ADD DETAILS UNDER THE PHOTO
-                const textYStart = 195; // Position below the large photo
-
-                // Name
                 pdf.setFontSize(24);
                 pdf.setTextColor(0);
-                pdf.setFont("helvetica", "bold");
-                pdf.text(row[0].toUpperCase(), pageWidth / 2, textYStart, {align: "center"});
-
-                // Class
-                pdf.setFontSize(18);
-                pdf.setFont("helvetica", "normal");
-                pdf.setTextColor(100);
-                pdf.text("Class: " + row[1], pageWidth / 2, textYStart + 12, {align: "center"});
-                
-                // Footer Page Number
-                pdf.setFontSize(10);
-                pdf.text("Page " + (i + 1), pageWidth / 2, pageHeight - 10, {align: "center"});
+                pdf.text(row[0].toUpperCase(), pageWidth / 2, 200, {align: "center"});
+                pdf.setFontSize(14);
+                pdf.text("Class: " + row[1], pageWidth / 2, 212, {align: "center"});
             });
 
-            pdf.save("Nilwala_Nature_Diary_Full_Size.pdf");
-            msg.innerText = "PDF Downloaded successfully!";
-            msg.style.color = "green";
+            pdf.save("Nature_Diary_" + cls + ".pdf");
+            msg.innerText = "PDF Download Complete!";
         } catch (err) {
-            msg.innerText = "Error fetching data.";
-            msg.style.color = "red";
+            alert("Error: Database empty or connection issue.");
         }
     }
 </script>
-
 </body>
 </html>
