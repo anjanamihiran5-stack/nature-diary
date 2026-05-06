@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nilwala Gallery</title>
-	
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-	
-	
         :root {
             --primary: #2d5a27;
             --primary-hover: #1e3d1a;
@@ -29,7 +26,6 @@
 
         h1 { color: var(--primary); margin-top: 10px; }
 
-        /* Navigation & Controls */
         .header-nav {
             display: flex;
             justify-content: space-between;
@@ -49,19 +45,15 @@
             outline: none;
         }
 
-        .btn-home { 
-            background: var(--primary); color: white; border: none; padding: 12px 20px; 
+        .btn-home, .btn-download { 
+            color: white; border: none; padding: 12px 20px; 
             border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         
-        .btn-download { 
-            background: #444; color: white; border: none; padding: 12px 20px; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
-
+        .btn-home { background: var(--primary); }
+        .btn-download { background: #444; }
         .btn-home:hover, .btn-download:hover { opacity: 0.9; transform: translateY(-2px); }
 
-        /* Gallery Grid */
         .gallery { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
@@ -79,55 +71,43 @@
             cursor: pointer; 
             transition: all 0.3s ease; 
             border: 1px solid rgba(255,255,255,0.8);
+            position: relative; /* Essential for delete button positioning */
         }
 
-        .card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 15px 30px rgba(45, 90, 39, 0.15); 
+        .card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(45, 90, 39, 0.15); }
+
+        .card img { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; }
+
+        .card h3 { font-size: 15px; color: var(--primary); margin-top: 15px; text-transform: uppercase; }
+
+        /* Delete Button Style */
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: none;
+            font-weight: bold;
+            z-index: 10;
         }
 
-        .card img { 
-            width: 100%; 
-            height: 180px; 
-            object-fit: cover; 
-            border-radius: 12px; 
-        }
+        .card:hover .delete-btn { display: block; }
 
-        .card h3 { 
-            font-size: 15px; 
-            color: var(--primary); 
-            margin-top: 15px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-        }
-
-        /* Full Image Popup (Modal) */
         .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            backdrop-filter: blur(5px);
-            justify-content: center; 
-            align-items: center; 
-            z-index: 1000; 
-            cursor: zoom-out;
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; 
         }
 
-        .modal img { 
-            max-width: 90%; 
-            max-height: 85%; 
-            border-radius: 15px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            border: 5px solid white;
-            animation: zoomIn 0.3s ease;
-        }
+        .modal img { max-width: 90%; max-height: 85%; border-radius: 15px; border: 5px solid white; animation: zoomIn 0.3s ease; }
 
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         #loadingMsg { font-weight: bold; color: var(--primary); margin-top: 50px; }
     </style>
@@ -136,7 +116,6 @@
 
     <div class="header-nav">
         <button class="btn-home" onclick="window.location.href='index.html'">← Home</button>
-        
         <select onchange="location.href='view.html?class=' + this.value" id="filter">
             <option value="">-- Switch Class --</option>
             <option value="2MT1">2MT1</option><option value="2MT2">2MT2</option><option value="2MT3">2MT3</option>
@@ -144,14 +123,12 @@
             <option value="2SCE">2SCE</option><option value="2PR1">2PR1</option><option value="2PE1">2PE1</option>
             <option value="2PE2">2PE2</option><option value="2PEE">2PEE</option>
         </select>
-
         <div id="galleryControls" style="display:none;">
             <button class="btn-download" onclick="downloadCurrentGallery()">Download PDF</button>
         </div>
     </div>
 
     <h1 id="title">Select a Class Gallery</h1>
-    
     <div id="loadingMsg"></div>
     <div id="gallery" class="gallery"></div>
 
@@ -161,17 +138,17 @@
 
 <script>
     const dbURLs = {
-        "2MT1": "https://script.google.com/macros/s/AKfycbyjasjbxmnwWdPcApWRkRX6i61ZTJI_yr6JcvLKybGmmzmsCxLqGZli6eZYU-Ua4cI/exec",
-        "2MT2": "https://script.google.com/macros/s/AKfycbxtBaIv1yeKp1JH9u9xHp7OMzQ-XKKekyUlinLgAJLqTOshH5woC7Ge2ZO-ojD5dN6U/exec", 
-        "2MT3": "https://script.google.com/macros/s/AKfycbxNboQq8joQSUhSQcpv_VbScC0y--nVWA1aicn9y8fFVB9RuZpaOOSCHGTY2auzbYGF/exec",
-        "2MTE": "https://script.google.com/macros/s/AKfycbzv2H5cYKUiiTyVD23XRXGAV7-9_Vrz9nWVJf5Zz-8oV3C998kM5tWFYopvzUdDZS8A/exec", 
-        "2SC1": "https://script.google.com/macros/s/AKfycbxnHntGJUWlfhCL7LZ9DFxIYpJOiy6Rnu2U6nSKr9s4xKyYUBn511UCpA6uFMTtJEU3/exec", 
-        "2SC2": "https://script.google.com/macros/s/AKfycbz0vTDou24xKd5VYUtGP6iNFMY0vBiywrdiQp3SlDeexMIDzafDLyNbmnceP-O5UgbT/exec",
-        "2SCE": "https://script.google.com/macros/s/AKfycbySxm-5wfcOwlO8MmTHsWgmNel79M8KeLCyomTi7uVTbn_-7n2_s0aOPUgxW4LmIw3E/exec", 
-        "2PR1": "https://script.google.com/macros/s/AKfycbzJB8Yosp6UDcwFCOKyTPRO1-CLZFqun3Q1GWUUMLJumU4zGyzWGVYOqXL5vELkAw/exec", 
-        "2PE1": "https://script.google.com/macros/s/AKfycbwZZy0LXrNvQWEnYZYeBDynap_lwctDJHNq9hbYQ16ivlRCBqL3mt3rRKQiiCSlZOxQCA/exec",
-        "2PE2": "https://script.google.com/macros/s/AKfycbypDGKaioFw5mpzP6CxMqwVg9k6VWMQqVssJOW64bxyysrt3TXzKPdbPmkMMbrq6icR/exec", 
-        "2PEE": "https://script.google.com/macros/s/AKfycbz_JkO2xlg9QFqQLoNVhvxe4IET2EYo2O3ZDLUktqS8tBN1-86Lgwmi77mHZ7bwJ8NX/exec"
+        "2MT1": "https://script.google.com/macros/s/AKfycbxCZex1U4CdcLjOHnISHmqHsl5IJi5fZGD5W-_9ODozGHpH4OoJ6nSlLcjRJ2fD5tM/exec",
+        "2MT2": "https://script.google.com/macros/s/AKfycbwosutd17UHY7yQ_XY72H-LH4t3xBkC7nXRAZnO0g7ESin48-ofHZIYVuiJE-qcqXmC/exec", 
+        "2MT3": "https://script.google.com/macros/s/AKfycbz6OGNUyFdxZ1UvviJM3atzjtli1vSPx_dt6LiWzxeHMXETt7WOKHFn_GZQcbeCsOCc/exec",
+        "2MTE": "https://script.google.com/macros/s/AKfycbwFUCBrouOZDXDQGoT-PihY7JUq_ekH2lIW3Y_CncIaB8uvwqLJbQU1YHosJDCwI6nA/exec", 
+        "2SC1": "https://script.google.com/macros/s/AKfycbwgWk12Krn4hDP3YH7l6ocpCBZuT7Y9JaNDC6hu5k0Sp_fBxFGyue0rNVXi63cplzDb/exec", 
+        "2SC2": "https://script.google.com/macros/s/AKfycbwmyYgBq0IeCz7HA_4JS0GeHF8xQ5MWbpy3hWs2ccQrZrixmfm11EorE-uzYYs3kQBO/exec",
+        "2SCE": "https://script.google.com/macros/s/AKfycbxLBjRzLkoqE_Eu3IvW6UUrTqb_lCYBKDLge4qv-k-25N2ZK0VABX_sTHV50ZaKOZkN/exec",		
+        "2PR1": "https://script.google.com/macros/s/AKfycbwfn1VIF714gZNXwdMbTe9h4PIgRnEAsckUIWP54K4NAQjt9HU9xLM47wvNpDF0_8oBkg/exec", 
+        "2PE1": "https://script.google.com/macros/s/AKfycbxfcR0YaajKp1SednZgGiGQCN1UcwOHpfStanMYLTLR-czimT4cwZ1pkY1-7-6TX664FA/exec",
+        "2PE2": "https://script.google.com/macros/s/AKfycbwnh5wdEbHXltzaRAbE1edsHGZqItKTj03xorYP9cVqa4xywRC3lefdNo2O13lVefVG/exec", 
+        "2PEE": "https://script.google.com/macros/s/AKfycbxJBMcqsW69lc9E66tf6oGPMgwbqN6zo1LoyPnz7TcguO_EHwxeawCLvwiDnIDH5nvBjQ/exec"
     };
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -193,7 +170,6 @@
         try {
             const res = await fetch(targetURL);
             const data = await res.json();
-            
             loadMsg.innerText = ""; 
 
             if (data.length === 0) {
@@ -207,18 +183,50 @@
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.innerHTML = `
+                    <button class="delete-btn" title="Delete Entry">×</button>
                     <img src="${row[2]}" loading="lazy">
                     <h3>${row[0]}</h3>
                 `;
-                // Popup Trigger
-                div.onclick = () => {
+
+                // Modal Popup
+                div.querySelector('img').onclick = () => {
                     document.getElementById('modal').style.display = 'flex';
                     document.getElementById('fullImg').src = row[2];
                 };
+
+                // Delete Function
+                div.querySelector('.delete-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteEntry(row[0], row[2]);
+                };
+
                 gallery.appendChild(div);
             });
         } catch (e) {
             loadMsg.innerText = "Error: Could not connect to the nature database.";
+        }
+    }
+
+    async function deleteEntry(name, photoData) {
+        const pass = prompt("Enter Admin Password:");
+        if (pass !== "1234") return alert("Incorrect Password");
+
+        if (!confirm("Delete " + name + "'s entry?")) return;
+
+        const loadMsg = document.getElementById('loadingMsg');
+        loadMsg.innerText = "🗑️ Removing entry...";
+
+        try {
+            await fetch(targetURL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ action: "delete", name: name, photo: photoData })
+            });
+            alert("Entry deleted! Please wait a moment for the page to refresh.");
+            location.reload();
+        } catch (e) {
+            alert("Delete failed.");
+            loadMsg.innerText = "";
         }
     }
 
