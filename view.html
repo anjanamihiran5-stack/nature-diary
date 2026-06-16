@@ -71,7 +71,7 @@
             cursor: pointer; 
             transition: all 0.3s ease; 
             border: 1px solid rgba(255,255,255,0.8);
-            position: relative; /* Essential for delete button positioning */
+            position: relative;
         }
 
         .card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(45, 90, 39, 0.15); }
@@ -97,7 +97,27 @@
             z-index: 10;
         }
 
-        .card:hover .delete-btn { display: block; }
+        /* Individual Download Image Button Style */
+        .single-dl-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(45, 90, 39, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: none;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .card:hover .delete-btn, .card:hover .single-dl-btn { display: block; }
+        .delete-btn:hover { background: #c0392b; }
+        .single-dl-btn:hover { background: var(--primary-hover); }
 
         .modal { 
             display: none; position: fixed; top: 0; left: 0; 
@@ -118,13 +138,14 @@
         <button class="btn-home" onclick="window.location.href='index.html'">← Home</button>
         <select onchange="location.href='view.html?class=' + this.value" id="filter">
             <option value="">-- Switch Class --</option>
+            <option value="LECTURERS">LECTURERS</option>
             <option value="2MT1">2MT1</option><option value="2MT2">2MT2</option><option value="2MT3">2MT3</option>
             <option value="2MTE">2MTE</option><option value="2SC1">2SC1</option><option value="2SC2">2SC2</option>
             <option value="2SCE">2SCE</option><option value="2PR1">2PR1</option><option value="2PE1">2PE1</option>
             <option value="2PE2">2PE2</option><option value="2PEE">2PEE</option>
         </select>
         <div id="galleryControls" style="display:none;">
-            <button class="btn-download" onclick="downloadCurrentGallery()">Download PDF</button>
+            <button class="btn-download" onclick="downloadCurrentGallery()">Download Whole Class PDF</button>
         </div>
     </div>
 
@@ -138,13 +159,14 @@
 
 <script>
     const dbURLs = {
+        "LECTURERS": "https://script.google.com/macros/s/AKfycbwsw5i7saTSiws-Dj6ZVru-G12T4snDWAgdJ4gw9YTmMreI52fsv7B34ITEZfQSL480wA/exec",
         "2MT1": "https://script.google.com/macros/s/AKfycbxCZex1U4CdcLjOHnISHmqHsl5IJi5fZGD5W-_9ODozGHpH4OoJ6nSlLcjRJ2fD5tM/exec",
         "2MT2": "https://script.google.com/macros/s/AKfycbwosutd17UHY7yQ_XY72H-LH4t3xBkC7nXRAZnO0g7ESin48-ofHZIYVuiJE-qcqXmC/exec", 
         "2MT3": "https://script.google.com/macros/s/AKfycbz6OGNUyFdxZ1UvviJM3atzjtli1vSPx_dt6LiWzxeHMXETt7WOKHFn_GZQcbeCsOCc/exec",
         "2MTE": "https://script.google.com/macros/s/AKfycbwFUCBrouOZDXDQGoT-PihY7JUq_ekH2lIW3Y_CncIaB8uvwqLJbQU1YHosJDCwI6nA/exec", 
         "2SC1": "https://script.google.com/macros/s/AKfycbwgWk12Krn4hDP3YH7l6ocpCBZuT7Y9JaNDC6hu5k0Sp_fBxFGyue0rNVXi63cplzDb/exec", 
         "2SC2": "https://script.google.com/macros/s/AKfycbwmyYgBq0IeCz7HA_4JS0GeHF8xQ5MWbpy3hWs2ccQrZrixmfm11EorE-uzYYs3kQBO/exec",
-        "2SCE": "https://script.google.com/macros/s/AKfycbxLBjRzLkoqE_Eu3IvW6UUrTqb_lCYBKDLge4qv-k-25N2ZK0VABX_sTHV50ZaKOZkN/exec",		
+        "2SCE": "https://script.google.com/macros/s/AKfycbxLBjRzLkoqE_Eu3IvW6UUrTqb_lCYBKDLge4qv-k-25N2ZK0VABX_sTHV50ZaKOZkN/exec",        
         "2PR1": "https://script.google.com/macros/s/AKfycbwfn1VIF714gZNXwdMbTe9h4PIgRnEAsckUIWP54K4NAQjt9HU9xLM47wvNpDF0_8oBkg/exec", 
         "2PE1": "https://script.google.com/macros/s/AKfycbxfcR0YaajKp1SednZgGiGQCN1UcwOHpfStanMYLTLR-czimT4cwZ1pkY1-7-6TX664FA/exec",
         "2PE2": "https://script.google.com/macros/s/AKfycbwnh5wdEbHXltzaRAbE1edsHGZqItKTj03xorYP9cVqa4xywRC3lefdNo2O13lVefVG/exec", 
@@ -183,6 +205,7 @@
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.innerHTML = `
+                    <button class="single-dl-btn" title="Download Original Image">📥</button>
                     <button class="delete-btn" title="Delete Entry">×</button>
                     <img src="${row[2]}" loading="lazy">
                     <h3>${row[0]}</h3>
@@ -192,6 +215,12 @@
                 div.querySelector('img').onclick = () => {
                     document.getElementById('modal').style.display = 'flex';
                     document.getElementById('fullImg').src = row[2];
+                };
+
+                // Direct Original Image Download Function
+                div.querySelector('.single-dl-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    downloadOriginalImage(row[0], row[2]);
                 };
 
                 // Delete Function
@@ -230,12 +259,34 @@
         }
     }
 
+    // NEW FUNCTION: DOWNLOADS THE EXACT ORIGINAL IMAGE WITHOUT ANY CHANGES
+    function downloadOriginalImage(name, photoData) {
+        const pass = prompt("Admin Password to Download Image:");
+        if (pass !== "nncoenature") return alert("Access Denied");
+
+        try {
+            // Create a temporary link element
+            const link = document.createElement('a');
+            
+            // Name of the downloaded file (e.g., student_name_nature.png)
+            link.download = name.replace(/\s+/g, '_') + "_nature.png";
+            
+            // Assign the exact raw photo data string
+            link.href = photoData;
+            
+            // Programmatically click the link to trigger the browser download
+            link.click();
+        } catch (err) {
+            alert("Failed to download image.");
+        }
+    }
+
     async function downloadCurrentGallery() {
         const pass = prompt("Admin Password:");
-        if (pass !== "1234") return alert("Access Denied");
+        if (pass !== "nncoenature") return alert("Access Denied");
         
         const loadMsg = document.getElementById('loadingMsg');
-        loadMsg.innerText = "🌲 Preparing Class PDF... Please wait.";
+        loadMsg.innerText = "🌲 Preparing Full Class PDF... Please wait.";
 
         try {
             const response = await fetch(targetURL);
@@ -263,7 +314,7 @@
 
             pdf.save("Nature_Diary_" + cls + ".pdf");
             loadMsg.innerText = "";
-            alert("PDF Ready!");
+            alert("Full PDF Ready!");
         } catch (err) {
             alert("PDF failed to generate.");
             loadMsg.innerText = "";
